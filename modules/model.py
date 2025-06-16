@@ -40,10 +40,12 @@ def solve_model(t, input_vars):
 
 def get_model_maxs(x_sol, v_sol, a_sol):
     sol_maxs_list = []
-    sol_list = [x_sol, v_sol, a_sol]
-    for sol in sol_list:
-        sol_max = np.max(abs(sol))
-        sol_maxs_list.append(sol_max)
+    x_max = np.max(abs(x_sol))
+    v_max = np.max(abs(v_sol))
+    a_max = np.min(a_sol)
+    sol_maxs_list.append(x_max)
+    sol_maxs_list.append(v_max)
+    sol_maxs_list.append(a_max)
     return sol_maxs_list
 
 def solve_model_test(t):
