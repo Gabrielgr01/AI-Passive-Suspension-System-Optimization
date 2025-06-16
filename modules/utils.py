@@ -37,7 +37,7 @@ def create_vertical_graphs(x_values, x_title, y_values_dict, graph_title, image_
     for y_title, y_values in y_values_dict.items():
         plt.subplot(2, 1, count)
         plt.plot(x_values, y_values, label = y_title, color = color)
-        count =+ count + 1
+        count =+ 1
     #plt.tight_layout()
     plt.legend(loc="upper right")
     plt.xlabel(x_title)
