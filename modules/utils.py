@@ -32,6 +32,7 @@ def create_multi_y_graph(x_values, x_title, y_values_dict, plot_type, graph_titl
                 plt.plot(x_values, y_values, label = y_title)
             case _:
                 print("-W-: For 'create_multi_y_graph' attribute 'plot_type' use: scatter or plot")
+    plt.legend(loc="upper right")
     plt.xlabel(x_title)
     plt.title(graph_title)
     plt.savefig(f"{image_path}/{image_name}")
