@@ -11,19 +11,22 @@ run_area = os.getcwd()
 
 # Hiperparámetros
 popu_size = 100  # Tamaño de población
-generations = 35  # Número de iteraciones
+generations = 50  # Número de iteraciones
 
 # Hiperparámetros de cruze
 alpha = 0.5
-mate_chance = 0.5
-parent_popu_size = 50
-child_popu_size = 100
+mate_chance = 0.75
+parent_popu_size = 25
+child_popu_size = 50
 
 # Hiperparámetros de mutación
-mutate_chance = 0.3
+mutate_chance = 0.2 
 mu = 0.0
-# sigma = 1
-sigma = (k_range[1] - k_range[0]) * 0.05  # 5% del rango de k
+
+sigma = 200
+sigma_k = (k_range[1] - k_range[0]) * 0.05  # 5% del rango de k
+sigma_b = (b_range[1] - b_range[0]) * 0.05
+
 
 car_mass = 200  # in kg
 m = car_mass/4

@@ -24,9 +24,9 @@ def evaluation_function(individual):
     return [x_sol_max, a_sol_max]
 
 
-model.solve_model_test(t)
+#model.solve_model_test(t)
 #graph_model_maxs(x_0, v_0, t)
-analysis.ceteris_paribus(10, kb_range_dict, 0.2)
+#analysis.ceteris_paribus(10, kb_range_dict, 0.2)
 
 
 
@@ -98,14 +98,53 @@ popu, logbook = algorithms.eaMuPlusLambda(
     lambda_=child_popu_size, cxpb=mate_chance, mutpb=mutate_chance,
     ngen=generations, stats=stats, halloffame=hof
     )
+
+#print('------------------------')
+#print("Individuos no dominados:")
+#for item in hof:
+#    print(item)
+#    results = toolbox.evaluate(item)
+#    plt.scatter(results[0], results[1])
+#    plt.xlabel('Parametro X')
+#    plt.ylabel('Parametro Y')
+#    plt.title('Frente de Pareto')
+#    plt.show()
+
+x_vals = []
+a_vals = []
+k_vals = []
+b_vals = []
+
 print('------------------------')
 print("Individuos no dominados:")
 for item in hof:
     print(item)
     results = toolbox.evaluate(item)
-    plt.scatter(results[0], results[1])
-    plt.xlabel('Parametro X')
-    plt.ylabel('Parametro Y')
-    plt.title('Frente de Pareto')
-    plt.show()
+    x_vals.append(results[0])  # desplazamiento máximo
+    a_vals.append(results[1])  # aceleración máxima
+    k_vals.append(item[0])
+    b_vals.append(item[1])
 
+plt.figure(figsize=(10, 6))
+plt.scatter(x_vals, a_vals, color='blue', label='Frente de Pareto')
+
+# Escala logarítmica opcional
+#plt.xscale("log")
+#plt.yscale("log")
+
+# Anotar cada punto con k y b
+for i in range(len(x_vals)):
+    plt.annotate(f"k={k_vals[i]:.1f}\nb={b_vals[i]:.1f}",
+                 (x_vals[i], a_vals[i]),
+                 textcoords="offset points",
+                 xytext=(5,5),
+                 ha='left',
+                 fontsize=8)
+
+plt.xlabel("Máximo desplazamiento")
+plt.ylabel("Máxima aceleración")
+plt.title("Frente de Pareto (Optimización multiobjetivo)")
+plt.grid(True)
+plt.legend()
+plt.tight_layout()
+plt.show()
