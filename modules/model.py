@@ -1,6 +1,8 @@
 ##### IMPORTS #####
 # Third party imports
 from scipy.integrate import odeint
+from scipy import signal
+import numpy as np
 # Built-in imports
 
 # Local imports
@@ -9,44 +11,59 @@ from .config import *
 
 
 ##### FUNCTIONS DEFINITION #####
-def model(t, S, k, b):
-    x, v = S
-    return [v, (-b*v-k*x+u)/m]
-
-
-def solve_model(x_0, v_0, input_vars, t_max, t_samples):
+def solve_model(input_vars, t_max, t_samples):
     k = input_vars[0]
     b = input_vars[1]
-    S_0 = (x_0, v_0)
     t = np.linspace(0, t_max, t_samples)
-    solution = odeint(model, y0=S_0, t=t, tfirst=True, args=(k, b))
 
-    x_sol = solution.T[0]
-    v_sol = solution.T[1]
-    a_sol = (-b * v_sol - k * x_sol + u) / m
+    # System transfer function for displacement
+    num = [1/m]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response of displacement
+    t, x_sol = signal.step(system, T=t)
+
+    # System transfer function for velocity
+    num = [1/m, 0]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response for velocity
+    t, v_sol = signal.step(system, T=t)
+
+    # System transfer function for acceleration
+    num = [1/m, 0, 0]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response for acceleration
+    t, a_sol = signal.step(system, T=t)
 
     return t, x_sol, v_sol, a_sol
 
 
 def get_model_maxs(x_sol, v_sol, a_sol):
     sol_maxs_list = []
-    sol_list = [x_sol, v_sol, a_sol]
-    for sol in sol_list:
-        sol_max = np.max(abs(sol))
-        sol_maxs_list.append(sol_max)
+    x_max = np.max(abs(x_sol))
+    v_max = np.max(abs(v_sol))
+    a_max = np.min(a_sol)
+    sol_maxs_list.append(x_max)
+    sol_maxs_list.append(v_max)
+    sol_maxs_list.append(a_max)
     return sol_maxs_list
 
 
 def solve_model_test():
     # Grafica de x, v, a vs t
-    t, x, v, a = solve_model(0, 5, [64, 32], 20, 50)
+    t, x, v, a = solve_model([64, 32], 20, 50)
     test_dict = {"x: displacement":x,
                  "v: velocity":v,
                  "a: acceleration":a,}
     create_multi_y_graph(t, "Time", test_dict, "plot", "Model test", "model_test", run_area)
 
 
-def graph_model_maxs(x_0, v_0, t_max, t_samples):
+def graph_model_maxs(t_max, t_samples):
     #!!! Revisar si es necesaria, sino borrar !!!
     k_values = [1, 20, 60, 130]
     b_values = [2, 30, 90, 150]
@@ -56,7 +73,7 @@ def graph_model_maxs(x_0, v_0, t_max, t_samples):
     a_points = []
     for k in k_values:
         for b in b_values:
-            t, x, _, a = solve_model(x_0, v_0, [k, b], t_max, t_samples)
+            t, x, _, a = solve_model([k, b], t_max, t_samples)
             x_max, _, a_max = get_model_maxs(x, _, a)
             k_comb.append(k)
             b_comb.append(b)

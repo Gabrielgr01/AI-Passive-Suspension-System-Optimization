@@ -27,14 +27,37 @@ C:.
         __init__.py
        """)
 
+
 def evaluation_function(individual):
-    global x_0, v_0, t
+    global t
     k = individual[0]
     b = individual[1]
-    t, x_sol, _, a_sol = model.solve_model(x_0, v_0, [k, b], 20, 50)
-    x_sol_max, _, a_sol_max = model.get_model_maxs(x_sol, _, a_sol)
-    return [x_sol_max, a_sol_max]
 
+    # Any individuals with no physical sense are penalized
+    if k <= 0 or b <= 0:
+        return [float('inf'), float('inf')]
+
+    try:
+        t, x_sol, _, a_sol = model.solve_model([k, b], 20, 100)
+        x_sol_max, _, a_sol_max = model.get_model_maxs(x_sol, _, a_sol)
+        return [x_sol_max, a_sol_max]
+    except Exception as e:
+        return [float('inf'), float('inf')]  # Penalize numeric errors
+
+# A function to restrict the mutated individuals to the defined range for "k" and "b" is defined
+def check_bounds(lower_bounds, upper_bounds):
+    def decorator(func):
+        def wrapper(*args, **kargs):
+            offspring = func(*args, **kargs)
+            for child in offspring:
+                for i in range(len(child)):
+                    if child[i] < lower_bounds[i]:
+                        child[i] = lower_bounds[i]
+                    elif child[i] > upper_bounds[i]:
+                        child[i] = upper_bounds[i]
+            return offspring
+        return wrapper
+    return decorator
 
 ##### Problem Analysis #####
 model.solve_model_test()
@@ -72,6 +95,9 @@ toolbox.register("evaluate", evaluation_function)
 toolbox.register("select", tools.selNSGA2)
 toolbox.register("mate", tools.cxBlend, alpha=alpha)
 toolbox.register("mutate", tools.mutGaussian, mu=mu, sigma=sigma, indpb=0.2)
+toolbox.decorate("mate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+toolbox.decorate("mutate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+
 
 ## Prueba del generador de individuos
 #ejemploPopu = toolbox.population(n=popu_size)
@@ -128,6 +154,7 @@ plt.scatter(x_vals, a_vals, color='blue', label='Frente de Pareto')
 # Escala logarítmica opcional
 #plt.xscale("log")
 #plt.yscale("log")
+
 
 # Anotar cada punto con k y b
 for i in range(len(x_vals)):
