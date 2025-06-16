@@ -19,7 +19,7 @@ def evaluation_function(individual):
     global x_0, v_0, t
     k = individual[0]
     b = individual[1]
-    x_sol, _, a_sol = model.solve_model(x_0, v_0, t, [k, b])
+    x_sol, _, a_sol = model.solve_model(t, [k, b])
     x_sol_max, _, a_sol_max = model.get_model_maxs(x_sol, _, a_sol)
     return [x_sol_max, a_sol_max]
 
