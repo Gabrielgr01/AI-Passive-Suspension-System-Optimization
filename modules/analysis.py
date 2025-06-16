@@ -49,7 +49,7 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                 random_point_aux_list = []
                 for in_var_name, in_point_value in random_point_aux.items():
                     random_point_aux_list.append(in_point_value)
-                x, _, a = solve_model(x_0, v_0, t, random_point_aux_list)
+                x, _, a = solve_model(t, random_point_aux_list)
 
                 model_dict = {"Displacement" : [],
                               "Acceleration" : []}

@@ -1,23 +1,40 @@
 from scipy.integrate import odeint
+from scipy import signal
+import numpy as np
 
 from .utils import *
 from .config import *
 
 u = 0
 
-def model(t, S, k, b):
-    x, v = S
-    return [v, (-b*v-k*x+u)/m]
+def solve_model(t, input_vars):
 
-def solve_model(x_0, v_0, t, input_vars):
     k = input_vars[0]
     b = input_vars[1]
-    S_0 = (x_0, v_0)
-    solution = odeint(model, y0=S_0, t=t, tfirst=True, args=(k, b))
 
-    x_sol = solution.T[0]
-    v_sol = solution.T[1]
-    a_sol = (-b * v_sol - k * x_sol + u) / m
+    # System transfer function for displacement
+    num = [1/m]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response of displacement
+    t, x_sol = signal.step(system, T=t)
+
+    # System transfer function for velocity
+    num = [1/m, 0]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response for velocity
+    t, v_sol = signal.step(system, T=t)
+
+    # System transfer function for acceleration
+    num = [1/m, 0, 0]
+    den = [1, b/m, k/m]
+    system = signal.TransferFunction(num, den)
+
+    # Find step response for acceleration
+    t, a_sol = signal.step(system, T=t)
 
     return x_sol, v_sol, a_sol
 
@@ -31,7 +48,7 @@ def get_model_maxs(x_sol, v_sol, a_sol):
 
 def solve_model_test(t):
     # Grafica de x, v, a vs t
-    x, v, a = solve_model(0, 5, t, [64, 32])
+    x, v, a = solve_model( t, [64, 32])
     test_dict = {"x: displacement":x,
                  "v: velocity":v,
                  "a: acceleration":a,}
@@ -42,7 +59,7 @@ def solve_model_test(t):
     #plt.legend(loc="upper left")
     #plt.show()
 
-def graph_model_maxs(x_0, v_0, t):
+def graph_model_maxs(t):
     k_values = [1, 20, 60, 130]
     b_values = [2, 30, 90, 150]
     k_comb = []
@@ -51,7 +68,7 @@ def graph_model_maxs(x_0, v_0, t):
     a_points = []
     for k in k_values:
         for b in b_values:
-            x, _, a = solve_model(x_0, v_0, t, [k, b])
+            x, _, a = solve_model(t, [k, b])
             x_max, _, a_max = get_model_maxs(x, _, a)
             k_comb.append(k)
             b_comb.append(b)
