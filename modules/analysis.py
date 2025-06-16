@@ -62,6 +62,7 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                 in_ref * (1 + scale_porcentage * 2),
             ]
             random_point_aux = random_point.copy()
+            #in_idx = list(input_ref_dict.keys()).index(in_name)
 
             ### Problem-specific functions to get the 'y' values ###
             y_values_dict = {"Displacement" : [],
@@ -78,7 +79,7 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                 random_point_aux_list = []
                 for in_var_name, in_point_value in random_point_aux.items():
                     random_point_aux_list.append(in_point_value)
-                _, x, _, a = solve_model(random_point_aux_list, 20, 50)
+                _, x, _, a = solve_model(x_0, v_0, random_point_aux_list, 20, 50)
 
                 #model_dict = {"Displacement" : [], "Acceleration" : []}
                 #model_dict["Displacement"] = x
