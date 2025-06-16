@@ -4,6 +4,18 @@ from .config import *
 from .utils import *
 from .model import *
 
+def plot_tradeoff(displacements, accelerations, title, in_name, in_values):
+    plt.figure()
+    plt.scatter(displacements, accelerations, color='blue')
+    for i in range(len(displacements)):
+        in_val = in_values[i]
+        plt.annotate(f"{in_name}:{in_val}", (displacements[i], accelerations[i]), fontsize=8)
+    plt.xlabel("Máximo desplazamiento")
+    plt.ylabel("Máxima aceleración")
+    plt.title("Trade-off: desplazamiento vs aceleración\n" + title)
+    plt.grid(True)
+    plt.show()
+
 def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
     for i in range(n_points):
         point_num = i + 1
@@ -70,10 +82,23 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
 
             # Create graphs
             graph_title = "Model maximum response to " + in_name
-            image_name = "point_" + str(point_num) + "_model_" + in_name + "_var_"
             for in_var_name, in_point_value in random_point_aux.items():
                 if in_var_name != in_name:
                     graph_title = graph_title + ". " + in_var_name + " = " + str(in_point_value)
-                    image_name = image_name + "_" + in_var_name + "_" + str(in_point_value)
-            image_path = str(run_area) + "\\problem_type_study\\"
-            create_vertical_graphs(current_in_values, in_name, y_values_dict, graph_title, image_name, image_path, "blue")
+            #plt.scatter(y_values_dict["Displacement"], y_values_dict["Acceleration"])
+            #plt.xlabel("Máximo desplazamiento")
+            #plt.ylabel("Máxima aceleración")
+            #plt.title("Trade-off entre objetivos para " + in_name + ". " + graph_title)
+            #plt.grid(True)
+            #plt.show()
+
+            plot_tradeoff(y_values_dict["Displacement"], y_values_dict["Acceleration"], graph_title, in_name, current_in_values)
+
+            #graph_title = "Model maximum response to " + in_name
+            #image_name = "point_" + str(point_num) + "_model_" + in_name + "_var_"
+            #for in_var_name, in_point_value in random_point_aux.items():
+            #    if in_var_name != in_name:
+            #        graph_title = graph_title + ". " + in_var_name + " = " + str(in_point_value)
+            #        image_name = image_name + "_" + in_var_name + "_" + str(in_point_value)
+            #image_path = str(run_area) + "\\problem_type_study\\"
+            #create_vertical_graphs(current_in_values, in_name, y_values_dict, graph_title, image_name, image_path, "blue")
