@@ -79,7 +79,7 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                 random_point_aux_list = []
                 for in_var_name, in_point_value in random_point_aux.items():
                     random_point_aux_list.append(in_point_value)
-                _, x, _, a = solve_model(random_point_aux_list, 20, 50, u)
+                t, x, _, a = solve_model(random_point_aux_list, 20, 50, u)
 
                 #model_dict = {"Displacement" : [], "Acceleration" : []}
                 #model_dict["Displacement"] = x
@@ -89,7 +89,7 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                 #image_path = str(run_area) + "\\problem_type_study\\"
                 #create_vertical_graphs(t, "time", model_dict, graph_title, image_name, image_path, "red")
                 
-                x_max, _, a_max = get_model_maxs(x, _, a)
+                x_max, _, a_max, t_a_max = get_model_maxs(x, _, a, t)
                 y_values_dict["Displacement"].append(x_max)
                 y_values_dict["Acceleration"].append(a_max)
                 ########################################################
