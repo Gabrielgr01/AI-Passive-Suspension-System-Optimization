@@ -16,10 +16,9 @@ b_range = [100, 5000]   # Ns/m -> Range for vehicle suspension
 kb_range_dict = {"k": k_range, "b": b_range}
 car_mass = 200 # in kg
 m = car_mass/4
-x_0 = 0
-v_0 = 5
-#u = signal.unit_impulse(8) # perturbacion (impulso unitario)
-u = 0
+#x_0 = 0
+#v_0 = 5
+u = 20000 # perturbacion (escalon)
 
 
 ##### Hyperparameters #####
