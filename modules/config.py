@@ -14,11 +14,11 @@ run_area = os.getcwd() # Current working directory
 k_range = [1000, 50000] # N/m -> Range for vehicle suspension
 b_range = [100, 5000]   # Ns/m -> Range for vehicle suspension
 kb_range_dict = {"k": k_range, "b": b_range}
-car_mass = 200 # in kg
+car_mass = 1000 # in kg
 m = car_mass/4
 #x_0 = 0
 #v_0 = 5
-u = 20000 # perturbacion (escalon)
+u = 10000 # perturbacion (escalon)
 
 
 ##### Hyperparameters #####
@@ -29,10 +29,10 @@ generations = 50  # Number of iterations
 alpha = 0.5
 mate_chance = 0.75
 parent_popu_size = 25
-child_popu_size = 50
+child_popu_size = 25
 # Mutation
-mutate_chance = 0.2 
+mutate_chance = 0.2
 mu = 0.0
-sigma = 200
-#sigma_k = (k_range[1] - k_range[0]) * 0.05 # 5% of the k range
-#sigma_b = (b_range[1] - b_range[0]) * 0.05 # 5% of the b range
+#sigma = 200
+sigma_k = (k_range[1] - k_range[0]) * 0.05 # 5% of the k range
+sigma_b = (b_range[1] - b_range[0]) * 0.05 # 5% of the b range
