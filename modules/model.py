@@ -38,7 +38,7 @@ def get_model_maxs_old(x_sol, v_sol, a_sol):
     return sol_maxs_list
 
 
-def get_model_maxs(x_sol, v_sol, a_sol):
+def get_model_maxs(x_sol, v_sol, a_sol, t):
     sol_maxs_list = []
 
     # Máximo absoluto de desplazamiento y velocidad
@@ -47,42 +47,60 @@ def get_model_maxs(x_sol, v_sol, a_sol):
         sol_maxs_list.append(sol_max)
 
     # Detectar máximos y mínimos locales de la aceleración
-    peaks, _ = find_peaks(a_sol)
-    valleys, _ = find_peaks(-a_sol)  # Mismos que mínimos locales
+    peaks_idx, _ = find_peaks(a_sol)
+    valleys_idx, _ = find_peaks(-a_sol)  # Mismos que mínimos locales
+    peaks = a_sol[peaks_idx]
+    valleys = a_sol[valleys_idx]
 
-    if len(peaks) and len(valleys):
+    if len(peaks): 
         max_peak = np.max(peaks)
-        min_valley = np.min(valleys)
-        if max_peak > np.abs(min_valley):
-            max_peak_valley = max_peak
-        else:
-            max_peak_valley = min_valley
-        a_peak_value = np.abs(max_peak_valley - a_sol[0])
-        sol_maxs_list.append(a_peak_value)
     else:
-        sol_max = np.max(np.abs(a_sol))
-        sol_maxs_list.append(sol_max)
+        max_peak = 0
+
+    if len(valleys):
+        min_valley = np.min(valleys)
+    else:
+        min_valley = 0
+
+    if max_peak > abs(min_valley):
+        max_peak_valley = max_peak
+        idx = np.where(a_sol==max_peak)
+        #print("max_peak: ", max_peak)
+    else:
+        max_peak_valley = abs(min_valley)
+        #max_peak_valley = min_valley
+        idx = np.where(a_sol==min_valley)
+        #print("min_valley: ", min_valley)
+    
+    t_a_max = t[idx]
+    sol_maxs_list.append(max_peak_valley)
+    sol_maxs_list.append(t_a_max)
 
     return sol_maxs_list
 
 
 def solve_model_test():
+    print("--> Solve Model Test ...")
     # Grafica de x, v, a vs t
-    t, x, v, a = solve_model([64, 32], 20, 50, 20000)
+    t, x, v, a = solve_model([64, 32], 100, 500, 20000)
+    #t, x, v, a = solve_model([1000, 5000], 20, 50, 20000)
+    _, _, a_max, t_a_max = get_model_maxs(x, v, a, t)
 
-    ### Mostrar picos y valles de la aceleración
-    #peaks, _ = find_peaks(a)
-    #valleys, _ = find_peaks(-a)
-    #plt.plot(t, a, label="a(t)")
+    ## Mostrar picos y valles de la aceleración
+    peaks, _ = find_peaks(a)
+    valleys, _ = find_peaks(-a)
+
+    plt.plot(t, a, label="a(t)")
     #plt.plot(t[peaks], a[peaks], "x", label="Picos")
     #plt.plot(t[valleys], a[valleys], "o", label="Valles")
-    #plt.legend()
-    #plt.xlabel("Tiempo")
-    #plt.ylabel("Aceleración")
-    #plt.title("Extremos de la aceleración")
-    #plt.grid(True)
-    #plt.show()
-    ###
+    plt.plot(t_a_max, a_max, "o", label="Max Seleccionado")
+    plt.legend()
+    plt.xlabel("Tiempo")
+    plt.ylabel("Aceleración")
+    plt.title("Extremos de la aceleración")
+    plt.grid(True)
+    plt.show()
+    ##
 
     test_dict = {"x: displacement":x,
                  "v: velocity":v,
@@ -101,7 +119,7 @@ def graph_model_maxs(x_0, v_0, t_max, t_samples):
     for k in k_values:
         for b in b_values:
             t, x, _, a = solve_model([k, b], t_max, t_samples, u)
-            x_max, _, a_max = get_model_maxs(x, _, a)
+            x_max, _, a_max, t_a_max = get_model_maxs(x, _, a, t)
             k_comb.append(k)
             b_comb.append(b)
             x_points.append(x_max)
