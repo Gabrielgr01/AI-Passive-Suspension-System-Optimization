@@ -27,12 +27,16 @@ C:.
         __init__.py
        """)
 
+
 def evaluation_function(individual):
     global x_0, v_0, t
     k = individual[0]
     b = individual[1]
-    t, x_sol, _, a_sol = model.solve_model(x_0, v_0, [k, b], 20, 50)
+    t, x_sol, _, a_sol = model.solve_model([k, b], 20, 50, u)
     x_sol_max, _, a_sol_max = model.get_model_maxs(x_sol, _, a_sol)
+
+    #print(f"Evaluando k={k:.2f}, b={b:.2f}, u={u:.2f} -> x_max={x_sol_max:.2f}, a_max={a_sol_max:.2f}")
+
     return [x_sol_max, a_sol_max]
 
 
