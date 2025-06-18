@@ -15,11 +15,36 @@ from .config import *
 ##### FUNCTIONS DEFINITION #####
 
 def model(S, t, k, b, u):
+    """
+    Function: Define the differential equations for a mass-spring-damper system.
+
+    Parameters:
+        S (list): State vector / Initial conditions [position x, velocity v]. 
+        t (float): Time variable (not used explicitly but required by odeint).
+        k (float): Spring constant.
+        b (float): Damping coefficient.
+        u (float): External force applied.
+
+    Returns:
+        List: Derivatives [dx/dt, dv/dt].
+    """
     x, v = S
     return [v, (-b*v-k*x+u)/m]
 
 
 def solve_model(input_vars, t_max, t_samples, u):
+    """
+    Function: Solve the mass-spring-damper system using the given parameters.
+
+    Parameters:
+        input_vars (list): List with constants: k (stiffness) and b (cushioning).
+        t_max (float): Maximum time for simulation.
+        t_samples (int): Number of time samples.
+        u (float): External force applied.
+
+    Returns:
+        List: time (t), displacement (x), velocity (v), and acceleration a.
+    """
     k = input_vars[0]
     b = input_vars[1]
     S_0 = (0, 0)
@@ -34,6 +59,19 @@ def solve_model(input_vars, t_max, t_samples, u):
 
 
 def get_model_maxs(x_sol, v_sol, a_sol, t):
+    """
+    Function: Obtain maximum absolute values for displacement, velocity, and acceleration.
+
+    Parameters:
+        x_sol (list): Max displacement over time.
+        v_sol (list): Max velocity over time.
+        a_sol (list): max acceleration over time.
+        t (float): Time at max acceleration.
+
+    Returns:
+        List: [max abs displacement, max abs velocity, max abs acceleration, time of max acceleration].
+    """
+    
     sol_maxs_list = []
 
     # Máximo absoluto de desplazamiento y velocidad
@@ -75,6 +113,24 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
 
 
 def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
+    """
+    Function: Test the mass-spring-damper model and generate plots for:
+        x(t), v(t), a(t),
+        peaks/valleys for the acceleration and 
+        max absolute acceleration.
+
+    Parameters:
+        input_vars (list): input_vars (list): List with constants: k (stiffness) and b (cushioning).
+        t_max (float): Maximum time for simulation.
+        t_sample (int): Number of time samples.
+        u (float): External force applied.
+        img_path (str): Path to save the plots.
+        show_plots (bool): Whether to display plots while running.
+
+    Returns:
+        None
+    """
+    
     print("--> Testing model ...")
     
     # Manages directory where images will be created
@@ -88,10 +144,10 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     t, x, v, a = solve_model(input_vars, t_max, t_sample, u)
     _, _, a_max, t_a_max = get_model_maxs(x, v, a, t)
 
-    test_dict = {"x: Desplazamiento":x,
-                 "v: Velocidad":v,
-                 "a: Aceleración":a,}
-    create_multi_y_graph(t, "Tiempo", test_dict, "plot", show_plots, "Modelo Masa-Resorte-Amortiguador", "model_test", image_path)
+    test_dict = {"x: Desplazamiento " + x_units:x,
+                 "v: Velocidad " + v_units:v,
+                 "a: Aceleración " + a_units:a,}
+    create_multi_y_graph(t, "Tiempo (s)", test_dict, "plot", show_plots, "Modelo Masa-Resorte-Amortiguador", "model_test", image_path)
 
     ## Mostrar picos y valles de la aceleración
     peaks, _ = find_peaks(a)
@@ -101,8 +157,8 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     plt.plot(t[peaks], a[peaks], "x", label="Picos")
     plt.plot(t[valleys], a[valleys], "o", label="Valles")
     plt.legend()
-    plt.xlabel("Tiempo")
-    plt.ylabel("Aceleración")
+    plt.xlabel("Tiempo (s)")
+    plt.ylabel("Aceleración " + a_units)
     plt.title("Picos y valles de la aceleración")
     plt.grid(True)
     plt.savefig(f"{image_path}/model_peaks_test")
@@ -113,8 +169,8 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     plt.plot(t, a, label="a(t)")
     plt.plot(t_a_max, a_max, "o", label="Max Abs Seleccionado")
     plt.legend()
-    plt.xlabel("Tiempo")
-    plt.ylabel("Aceleración")
+    plt.xlabel("Tiempo (s)")
+    plt.ylabel("Aceleración " + a_units)
     plt.title("Maximo absoluto de la aceleración")
     plt.grid(True)
     plt.savefig(f"{image_path}/model_max_test")
