@@ -24,7 +24,7 @@ kb_range_dict = {"k": k_range,
                  "b": b_range}  # Dict with k and b ranges
 car_mass = 1000                 # Car mass [kg]
 m = car_mass/4                  # Mass for each suspension
-u = 10000                       # External force (step) - Perturbation
+u = 5000                       # External force (step) - Perturbation
 x_units = "m"                   # Units for the output displacement (x)
 v_units = "m/s"                 # Units for the output velocity (v)
 a_units = "m/s^2"               # Units for the output acceleration (a)

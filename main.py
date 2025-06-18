@@ -21,6 +21,23 @@ toolbox = base.Toolbox()
 
 
 def evaluation_function(individual, verbose=False):
+    """
+    Function:
+    Used to evaluate every individual.
+
+    Finds the systems response for a given "k" and "b" values. 
+    Afterwards, it outputs the maximum magnitude of each 
+    response (displacement and acceleration).
+
+    Parameters:
+    individual (list): list containing the chromosomes "k" and "b".
+    verbose (bool): Used to display information about each individuals 
+    fitness in the terminal.
+
+    Returns:
+    fitness (list): Fitness of a given individual.
+
+    """
     k = individual[0]
     b = individual[1]
     t, x_sol, _, a_sol = model.solve_model([k, b], 100, 500, u)
@@ -34,16 +51,17 @@ def evaluation_function(individual, verbose=False):
 
 def checkBounds(lower_bounds, upper_bounds):
     """
-    Decorator that checks if the mutated individuals are within 
-    the allele space. If they are not, the specific chromosome is 
-    modified to enter said space. 
+    Function:
+    Decorator that checks if the mutated individuals are within
+    the allele space. If they are not, the specific chromosome is
+    modified to enter said space.
 
-    Arguments:
+    Parameters:
     lower_bounds (list): list containing the minimum values of "b" and "k".
     upper_bounds (list): list containing the maximum values of "b" and "k".
 
     Returns:
-    function: A decorator that wraps functions in order to maintain 
+    function: A decorator that wraps functions in order to maintain
     individuals in the defined allele space.
 
     Source:
@@ -67,14 +85,14 @@ def checkBounds(lower_bounds, upper_bounds):
 
 def plot_pareto_front(solutions, img_path, annotate_inputs=False, show=False, verbose=False):
     print("\n--> Getting the Pareto Front ...")
-    
+
     # Manages directory where images will be created
     image_dir_name = "\\images\\pareto"
     image_path = str(img_path) + image_dir_name
     permission_status = utils.manage_directories_gen(image_dir_name)
     if permission_status == 1:
         return
-    
+
     # Obtains the Pareto Front
     x_values = []
     a_values = []
@@ -91,8 +109,8 @@ def plot_pareto_front(solutions, img_path, annotate_inputs=False, show=False, ve
         x_max, a_max = toolbox.evaluate(individual)
         x_values.append(x_max)  # maximum displacements
         a_values.append(a_max)  # maximum accelerations
-        k_values.append(individual[0]) # k values
-        b_values.append(individual[1]) # b values
+        k_values.append(individual[0])  # k values
+        b_values.append(individual[1])  # b values
 
     if annotate_inputs == True:
         annotate_vals = [k_values, b_values]
@@ -128,8 +146,8 @@ def get_preferred_solution(solutions, preference, verbose):
             best_score = score
             best_individual = individual
 
-    best_inputs.append(best_individual[0]) # k
-    best_inputs.append(best_individual[1]) # b
+    best_inputs.append(best_individual[0])  # k
+    best_inputs.append(best_individual[1])  # b
 
     if verbose == True:
         print("- Using preference: ", int(preference*100), r"% for displacement. ", int((1-preference)*100), r"% for acceleration.")
@@ -153,7 +171,7 @@ def run_evolutionary_algorithm():
 
     # Alleles
     toolbox.register("k_stiffness", random.uniform, a=k_range[0], b=k_range[1])  # Stiffness 'k' gene
-    toolbox.register("b_cushioning", random.uniform, a=b_range[0], b=b_range[1]) # Cushioning 'b' gene
+    toolbox.register("b_cushioning", random.uniform, a=b_range[0], b=b_range[1])  # Cushioning 'b' gene
     # Individual generator
     toolbox.register("individual_generation",
                      tools.initCycle,
@@ -204,7 +222,7 @@ def run_evolutionary_algorithm():
 
 if debug == True:
     # Test for the Evaluation Function
-    print("Evaluación:", evaluation_function([30000, 1000])) # Individuo con mayor k y b debería tener menor x_max y a_max
+    print("Evaluación:", evaluation_function([30000, 1000]))  # Individuo con mayor k y b debería tener menor x_max y a_max
     print("Evaluación (peor caso):", evaluation_function([1000, 100]))
 
 # Problem Analysis
