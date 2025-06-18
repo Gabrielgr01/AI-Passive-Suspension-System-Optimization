@@ -23,24 +23,24 @@ toolbox = base.Toolbox()
 def evaluation_function(individual, verbose=False):
     """
     Function:
-    Used to evaluate every individual.
+        Used to evaluate every individual.
 
-    Finds the systems response for a given "k" and "b" values.
-    Afterwards, it outputs the maximum magnitude of each
-    response (displacement and acceleration).
+        Finds the systems response for a given "k" and "b" values.
+        Afterwards, it outputs the maximum magnitude of each
+        response (displacement and acceleration).
 
     Parameters:
-    individual (list): list containing the chromosomes "k" and "b".
-    verbose (bool): Used to display information about each individuals
-                    fitness in the terminal.
+        individual (list): list containing the chromosomes "k" and "b".
+        verbose (bool): Used to display information about each individuals
+                        fitness in the terminal.
 
     Returns:
-    fitness (list): Fitness of a given individual.
+        fitness (list): Fitness of a given individual.
 
     """
     k = individual[0]
     b = individual[1]
-    t, x_sol, _, a_sol = model.solve_model([k, b], 100, 500, u)
+    t, x_sol, _, a_sol = model.solve_model([k, b], t_max, t_samples, u)
     x_sol_max, _, a_sol_max, t_a_max = model.get_model_maxs(x_sol, _, a_sol, t)
 
     if verbose == True:
@@ -51,7 +51,7 @@ def evaluation_function(individual, verbose=False):
     return [x_sol_max, a_sol_max]
 
 
-def checkBounds(lower_bounds, upper_bounds):
+def check_bounds(lower_bounds, upper_bounds):
     """
     Function:
         Decorator that checks if the mutated individuals are within
@@ -93,8 +93,8 @@ def plot_pareto_front(
 ):
     """
     Function:
-    Generates a plot of the Pareto front from a list of non-dominated
-    solutions.
+        Generates a plot of the Pareto front from a list of non-dominated
+        solutions.
 
     Parameters:
         solutions (list): A list of non-dominated individuals. Each individual
@@ -102,16 +102,17 @@ def plot_pareto_front(
         img_path (str): Path where the output image and directory will be
                         created.
         annotate_inputs (bool, optional): If True, annotates each point in the
-                                            scatter plot with its (k, b)
-                                            values. Default is False.
+                                          scatter plot with its (k, b)
+                                          values. Default is False.
         show (bool, optional): If True, displays the plot in a window after
-                                saving. Default is False.
+                               saving. Default is False.
         verbose (bool, optional): If True, prints details about each solution
-                                    evaluated. Default is False.
+                                  evaluated. Default is False.
 
     Returns:
         None
     """
+    
     print("\n--> Getting the Pareto Front ...")
 
     # Manages directory where images will be created
@@ -161,12 +162,12 @@ def plot_pareto_front(
 def get_preferred_solution(solutions, preference, verbose):
     """
     Function:
-    Selects the best individual from a list of solutions based on a weighted 
-    preference between displacement and acceleration.
+        Selects the best individual from a list of solutions based on a weighted 
+        preference between displacement and acceleration.
 
     Parameters:
         solutions (list): A list of non-dominated individuals. Each individual
-                            is a list [k, b].
+                          is a list [k, b].
         preference (float): A float between 0 and 1 indicating the preference for the displacement. The second objective 
                             The acceleration is weighted as (1 - preference).
         verbose (bool): If True, print detailed information about the selected individual 
@@ -177,6 +178,7 @@ def get_preferred_solution(solutions, preference, verbose):
         best_inputs (list): The chromosome values of selected individual [k, b].
         best_outputs (list): The evaluated objective values [x_max, a_max].
     """
+    
     print("\n--> Getting Prefered Solution ...")
     # 'preference' will be applied to the first output of the evaluation_function
     # '(1 - preference)' will be applied to the second output of the evaluation_function
@@ -219,16 +221,20 @@ def get_preferred_solution(solutions, preference, verbose):
 def run_evolutionary_algorithm():
     """
     Function:
-    Runs a multi-objective evolutionary algorithm using the DEAP library.
+        Runs a multi-objective evolutionary algorithm using the DEAP library.
 
-    This function sets up and executes an evolutionary process to optimize two 
-    conflicting objectives (displacement and acceleration). The function registers 
-    genetic operators, initializes the population, executes the evolution, and 
-    visualizes the results.
+        This function sets up and executes an evolutionary process to optimize two 
+        conflicting objectives (displacement and acceleration). The function registers 
+        genetic operators, initializes the population, executes the evolution, and 
+        visualizes the results.
+
+    Parameters:
+        None
 
     Returns:
         None
     """
+    
     print("\n--> Running the Evolutionary Algorithm ...")
 
     # Negative weights for minimization
@@ -269,10 +275,10 @@ def run_evolutionary_algorithm():
         "mutate", tools.mutGaussian, mu=mu, sigma=(sigma_k, sigma_b), indpb=0.2
     )
     toolbox.decorate(
-        "mate", checkBounds([k_range[0], b_range[0]], [k_range[1], b_range[1]])
+        "mate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]])
     )
     toolbox.decorate(
-        "mutate", checkBounds([k_range[0], b_range[0]], [k_range[1], b_range[1]])
+        "mutate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]])
     )
 
     if debug == True:
@@ -324,18 +330,18 @@ def run_evolutionary_algorithm():
 ##### MAIN EXECUTION #####
 
 if debug == True:
-    # Test for the Evaluation Function
-    print(
-        "Evaluación:", evaluation_function([30000, 1000])
-    )  # Individuo con mayor k y b debería tener menor x_max y a_max
+    # Test for the Evaluation Function.
+    # Individual with greater k and b values should have smaller 
+    # x_max and a_max values.
+    print("Evaluación:", evaluation_function([30000, 1000]))  
     print("Evaluación (peor caso):", evaluation_function([1000, 100]))
 
 # Problem Analysis
 model.test_model(
     input_vars=[64, 32],
-    t_max=100,
-    t_sample=500,
-    u=20000,
+    t_max=t_max,
+    t_sample=t_samples,
+    u=u,
     img_path=run_area,
     show_plots=display_plots,
 )
