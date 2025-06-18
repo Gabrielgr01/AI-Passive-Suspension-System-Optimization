@@ -1,7 +1,10 @@
 ##### IMPORTS #####
+
 # Third party imports
+import numpy as np
 from scipy.integrate import odeint
 from scipy.signal import find_peaks
+
 # Built-in imports
 
 # Local imports
@@ -10,6 +13,7 @@ from .config import *
 
 
 ##### FUNCTIONS DEFINITION #####
+
 def model(S, t, k, b, u):
     x, v = S
     return [v, (-b*v-k*x+u)/m]
@@ -27,15 +31,6 @@ def solve_model(input_vars, t_max, t_samples, u):
     a_sol = (-b * v_sol - k * x_sol + u) / m
 
     return t, x_sol, v_sol, a_sol
-
-
-def get_model_maxs_old(x_sol, v_sol, a_sol):
-    sol_maxs_list = []
-    sol_list = [x_sol, v_sol, a_sol]
-    for sol in sol_list:
-        sol_max = np.max(abs(sol))
-        sol_maxs_list.append(sol_max)
-    return sol_maxs_list
 
 
 def get_model_maxs(x_sol, v_sol, a_sol, t):
@@ -79,66 +74,50 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
     return sol_maxs_list
 
 
-def solve_model_test():
-    print("--> Solve Model Test ...")
+def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
+    print("--> Testing model ...")
+    
+    # Manages directory where images will be created
+    image_dir_name = "\\images\\model_tests"
+    image_path = img_path + image_dir_name
+    permission_status = manage_directories_gen(image_dir_name)
+    if permission_status == 1:
+        return
+    
     # Grafica de x, v, a vs t
-    t, x, v, a = solve_model([64, 32], 100, 500, 20000)
-    #t, x, v, a = solve_model([1000, 5000], 20, 50, 20000)
+    t, x, v, a = solve_model(input_vars, t_max, t_sample, u)
     _, _, a_max, t_a_max = get_model_maxs(x, v, a, t)
+
+    test_dict = {"x: Desplazamiento":x,
+                 "v: Velocidad":v,
+                 "a: Aceleración":a,}
+    create_multi_y_graph(t, "Tiempo", test_dict, "plot", show_plots, "Modelo Masa-Resorte-Amortiguador", "model_test", image_path)
 
     ## Mostrar picos y valles de la aceleración
     peaks, _ = find_peaks(a)
     valleys, _ = find_peaks(-a)
 
     plt.plot(t, a, label="a(t)")
-    #plt.plot(t[peaks], a[peaks], "x", label="Picos")
-    #plt.plot(t[valleys], a[valleys], "o", label="Valles")
-    plt.plot(t_a_max, a_max, "o", label="Max Seleccionado")
+    plt.plot(t[peaks], a[peaks], "x", label="Picos")
+    plt.plot(t[valleys], a[valleys], "o", label="Valles")
     plt.legend()
     plt.xlabel("Tiempo")
     plt.ylabel("Aceleración")
-    plt.title("Extremos de la aceleración")
+    plt.title("Picos y valles de la aceleración")
     plt.grid(True)
-    plt.show()
-    ##
+    plt.savefig(f"{image_path}/model_peaks_test")
+    if show_plots == True:
+        plt.show()
+    plt.close()
 
-    test_dict = {"x: displacement":x,
-                 "v: velocity":v,
-                 "a: acceleration":a,}
-    create_multi_y_graph(t, "Time", test_dict, "plot", "Model test", "model_test", run_area)
-
-
-def graph_model_maxs(x_0, v_0, t_max, t_samples):
-    #!!! Revisar si es necesaria, sino borrar !!!
-    k_values = [1, 20, 60, 130]
-    b_values = [2, 30, 90, 150]
-    k_comb = []
-    b_comb = []
-    x_points = []
-    a_points = []
-    for k in k_values:
-        for b in b_values:
-            t, x, _, a = solve_model([k, b], t_max, t_samples, u)
-            x_max, _, a_max, t_a_max = get_model_maxs(x, _, a, t)
-            k_comb.append(k)
-            b_comb.append(b)
-            x_points.append(x_max)
-            a_points.append(a_max)
-    #print(x_points)
-    #print(a_points)
-    #print("x size: "+str(len(x_points)))
-
-    t_maxs = np.linspace(0, len(x_points), len(x_points))
-    #print("t size: "+str(len(t_maxs)))
-    plt.plot(t_maxs, x_points, label = "x", color = "green")
-    plt.plot(t_maxs, a_points, label = "a", color = "purple")
-    for point in range(len(t_maxs)):
-        t = t_maxs[point]
-        x = x_points[point]
-        a = a_points[point]
-        k = k_comb[point]
-        b = b_comb[point]
-        #plt.annotate(f"k:{k},b:{b}", xy=(t, x))
-        plt.annotate(f"k:{k},b:{b}", xy=(t, a))
-    plt.legend(loc="upper left")
-    plt.show()
+    plt.plot(t, a, label="a(t)")
+    plt.plot(t_a_max, a_max, "o", label="Max Abs Seleccionado")
+    plt.legend()
+    plt.xlabel("Tiempo")
+    plt.ylabel("Aceleración")
+    plt.title("Maximo absoluto de la aceleración")
+    plt.grid(True)
+    plt.savefig(f"{image_path}/model_max_test")
+    if show_plots == True:
+        plt.show()
+    plt.close()
