@@ -13,21 +13,65 @@ from .config import *
 
 ##### FUNCTIONS DEFINITION #####
 
-
 def print_files_tree():
     """
-    Function: Prints the hierarchical tree structure of the main program files
-    and modules. Used to explain the code in the written report.
-
+    Function: 
+        Prints the hierarchical tree structure of the main 
+        program files and modules.Includes images files.
+        Used to explain the code in the written report.
+    
     Parameters:
         None
 
     Returns:
         None
     """
+    
+    print ("""
+Program File Tree:
+C:.
+│   main.py
+│
+├───modules
+│       analysis.py
+│       config.py
+│       model.py
+│       utils.py
+│        __init__.py
+│
+└───images
+    ├───model_tests
+    │       model_max_test.png
+    │       model_peaks_test.png
+    │       model_test.png
+    │
+    ├───pareto
+    │       pareto_front.png
+    │
+    └───problem_type_study
+            point_1_model_b_var__k_3081.png
+            point_1_model_k_var__b_1795.png
+            point_2_model_b_var__k_32859.png
+            point_2_model_k_var__b_1554.png
+            ...
+       """)
 
-    print(
-        """
+
+def print_files_tree_short():
+    """
+    Function: 
+        Prints the hierarchical tree structure of the main 
+        program files and modules. Includes only code files.
+        Used to explain the code in the written report.
+    
+    Parameters:
+        None
+
+    Returns:
+        None
+    """
+    
+    print ("""
 Program File Tree:
 C:.
 │   main.py
@@ -38,14 +82,14 @@ C:.
         model.py
         utils.py
         __init__.py
-       """
-    )
+    """)
 
 
 def manage_directories_gen_old(image_dir_name):
     """
-    Function: Manages image directories by moving the existing directory to a 
-    backup (_old) and creating a new directory with the original name.
+    Function: 
+        Manages image directories by moving the existing directory to a 
+        backup (_old) and creating a new directory with the original name.
 
     Parameters:
         image_dir_name (str): Name of the image to generate.
@@ -81,8 +125,9 @@ def manage_directories_gen_old(image_dir_name):
 
 def manage_directories_gen(image_dir_name):
     """
-    Function: Manages image directories by moving the existing directory to a
-    backup (_old) and creating a new directory with the original name.
+    Function: 
+        Manages image directories by moving the existing directory to a
+        backup (_old) and creating a new directory with the original name.
 
     Parameters:
         image_dir_name (str): Name of the image to generate.
@@ -114,7 +159,8 @@ def create_simple_graph(
     image_path,
 ):
     """
-    Function: Creates and saves a 2D graph (scatter or line).
+    Function: 
+        Creates and saves a 2D graph (scatter or line).
 
     Parameters:
         x_values (list): Data points for the x-axis.
@@ -176,8 +222,9 @@ def create_multi_y_graph(
     image_path,
 ):
     """
-    Function: Creates and saves a 2D graph with multiple y-axis functions
-    (scatter or line).
+    Function: 
+        Creates and saves a 2D graph with multiple y-axis functions
+        (scatter or line).
 
     Parameters:
         x_values (list or array): Data points for the x-axis.
@@ -226,7 +273,8 @@ def create_vertical_graphs(
     color,
 ):
     """
-    Function: Creates and saves a subplots arranged in vertical way
+    Function: 
+        Creates and saves a subplots arranged in vertical way
         Subplots share the same x-axis.
 
     Parameters:
