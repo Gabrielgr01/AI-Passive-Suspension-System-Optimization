@@ -1,10 +1,11 @@
 ##### IMPORTS #####
+
 # Third party imports
+import numpy as np
 
 # Built-in imports
 import random
-import os
-import stat
+
 # Local imports
 from .config import *
 from .utils import *
@@ -12,28 +13,15 @@ from .model import *
 
 
 ##### FUNCTIONS DEFINITION #####
+
 def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
     print("\n--> Running Sensibility Study (Ceteris Paribus) ...")
     
     # Manages directory where images will be created
-    image_dir_name = "\\problem_type_study"
+    image_dir_name = "\\images\\problem_type_study"
     image_path = str(run_area) + image_dir_name
-    try:
-        if os.path.isdir(image_path):
-            old_path = str(run_area) + image_dir_name + "_old"
-            if os.path.isdir(old_path):
-                os.remove(old_path)
-            os.replace(image_path, old_path)
-            os.chmod(old_path, stat.S_IWRITE)
-            os.mkdir(image_path)
-            os.chmod(image_path, stat.S_IWRITE)
-        else:
-            os.mkdir(image_path)
-            os.chmod(image_path, stat.S_IWRITE)
-    except PermissionError:
-        print("-E-: 'Access Denied' while trying to modify directories. Files not created.")
-        print(f"-I-: Possible affected directories:\n\t{image_path}\n\t{old_path}")
-        print("-I-: Solution: Execute program as administrator or remove the affected directories.\n")
+    permission_status = manage_directories_gen(image_dir_name)
+    if permission_status == 1:
         return
     
     # Starting the sensibility study
@@ -102,11 +90,13 @@ def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
                     graph_title = graph_title + ". Fixed " + in_var_name + " = " + str(in_point_value)
                     image_name = image_name + "_" + in_var_name + "_" + str(in_point_value)
             # Creates and adds the image to the corresponding directory
-            create_simple_graph(y_values_dict["Displacement"], 
-                                "Max. Displacement", 
-                                y_values_dict["Acceleration"], 
-                                "Max. Acceleration", 
-                                "scatter", 
-                                graph_title, 
-                                image_name, 
-                                image_path)
+            create_simple_graph(x_values = y_values_dict["Displacement"], 
+                                x_title = "Max. Displacement", 
+                                y_values = y_values_dict["Acceleration"], 
+                                y_title = "Max. Acceleration",
+                                annotate_values = [],
+                                plot_type = "scatter",
+                                show_plot = False,
+                                graph_title = graph_title, 
+                                image_name = image_name, 
+                                image_path = image_path)
