@@ -1,10 +1,13 @@
 ##### IMPORTS #####
+
 # Third party imports
 import numpy as np
 import matplotlib.pyplot as plt
 from deap import creator, base, tools, algorithms
+
 # Built-in imports
 import random
+
 # Local imports
 from modules.config import *
 import modules.utils as utils
@@ -13,36 +16,23 @@ import modules.analysis as analysis
 
 
 ##### FUNCTIONS DEFINITION #####
-def print_files_tree():
-    print ("""
-Program File Tree:
-C:.
-│   main.py
-│
-└───modules
-        analysis.py
-        config.py
-        model.py
-        utils.py
-        __init__.py
-       """)
 
+toolbox = base.Toolbox()
 
-def evaluation_function(individual):
+def evaluation_function(individual, verbose=False):
     k = individual[0]
     b = individual[1]
     t, x_sol, _, a_sol = model.solve_model([k, b], 100, 500, u)
     x_sol_max, _, a_sol_max, t_a_max = model.get_model_maxs(x_sol, _, a_sol, t)
 
-    #print(f"Evaluando k={k:.2f}, b={b:.2f}, u={u:.2f} -> x_max={x_sol_max:.2f}, a_max={a_sol_max:.2f}")
+    if verbose == True:
+        print(f"Evaluando k={k:.2f}, b={b:.2f}, u={u:.2f} -> x_max={x_sol_max:.2f}, a_max={a_sol_max:.2f}")
 
     return [x_sol_max, a_sol_max]
 
-print("Evaluación:", evaluation_function([30000, 1000])) # Individuo con mayor k y b debería tener menor x_max y a_max
-print("Evaluación (peor caso):", evaluation_function([1000, 100]))
 
-# A function to restrict the mutated individuals to the defined range for "k" and "b" is defined
 def check_bounds(lower_bounds, upper_bounds):
+    # Restricts the mutated individuals to the defined range for "k" and "b"
     def decorator(func):
         def wrapper(*args, **kargs):
             offspring = func(*args, **kargs)
@@ -56,135 +46,152 @@ def check_bounds(lower_bounds, upper_bounds):
         return wrapper
     return decorator
 
-##### Problem Analysis #####
-model.solve_model_test()
-#model.graph_model_maxs(x_0, v_0, 20, 50)
-analysis.ceteris_paribus(10, kb_range_dict, 0.2)
 
-
-##### EVOLUTIONARY ALGORITHM #####
-print("--> Running the Evolutionary Algorithm ...")
-pesos_fitness = (-1., -1.,)  # Negative weights for minimization
-toolbox = base.Toolbox()
-
-# 
-creator.create("fitness_function", base.Fitness, weights=pesos_fitness)
-creator.create("individual",
-               list,
-               fitness=creator.fitness_function,
-               typecode="f")
-
-# Alleles
-toolbox.register("k_stiffness", random.uniform, a=k_range[0], b=k_range[1])  # Stiffness 'k' gene
-toolbox.register("b_cushioning", random.uniform, a=b_range[0], b=b_range[1]) # Cushioning 'b' gene
-# 
-toolbox.register("individual_generation",
-                 tools.initCycle,
-                 creator.individual,
-                 (toolbox.k_stiffness, toolbox.b_cushioning),
-                 n=1)
-toolbox.register("population",
-                 tools.initRepeat,
-                 list,
-                 toolbox.individual_generation)
-toolbox.register("evaluate", evaluation_function)
-# Evolution operators
-toolbox.register("select", tools.selNSGA2)
-toolbox.register("mate", tools.cxBlend, alpha=alpha)
-#toolbox.register("mutate", tools.mutGaussian, mu=mu, sigma=sigma, indpb=0.2)
-toolbox.register("mutate", tools.mutGaussian, mu=mu, sigma=(sigma_k, sigma_b), indpb=0.2)
-toolbox.decorate("mate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
-toolbox.decorate("mutate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
-
-## Prueba del generador de individuos
-#ejemploPopu = toolbox.population(n=popu_size)
-#ejemplo = toolbox.individual_generation()
-#print("Individuo: ", ejemplo)
-#print("Ejemplo de poblacion: ", ejemploPopu)
-
-# Statistics on the general fitness of the population
-stats = tools.Statistics(lambda ind: ind.fitness.values)
-stats.register("avg", np.mean)  # Generation 'Average'
-stats.register("std", np.std)   # Individuals 'Standard Deviation'
-stats.register("min", np.min)   # 'Min Fitness' of the generation
-stats.register("max", np.max)   # 'Max Fitness' of the generation
-
-hof = tools.ParetoFront() # Hall of Fame
-popu = toolbox.population(n=popu_size) # Defines the initial population
-popu, logbook = algorithms.eaMuPlusLambda(
-    population=popu, toolbox=toolbox, mu=parent_popu_size,
-    lambda_=child_popu_size, cxpb=mate_chance, mutpb=mutate_chance,
-    ngen=generations, stats=stats, halloffame=hof
-    ) # Runs the Evolutionary Algorithm
-
-# Obtains the Pareto Front
-
-#print('------------------------')
-#print("Individuos no dominados:")
-#for item in hof:
-#    print(item)
-#    results = toolbox.evaluate(item)
-#    plt.scatter(results[0], results[1])
-#    plt.xlabel('Parametro X')
-#    plt.ylabel('Parametro Y')
-#    plt.title('Frente de Pareto')
-#    plt.show()
-
-x_vals = []
-a_vals = []
-k_vals = []
-b_vals = []
-
-print('------------------------')
-print("Individuos no dominados:")
-for item in hof:
-    print(item)
-    results = toolbox.evaluate(item)
-    x_vals.append(results[0])  # desplazamiento máximo
-    a_vals.append(results[1])  # aceleración máxima
-    k_vals.append(item[0])
-    b_vals.append(item[1])
-
-plt.figure(figsize=(10, 6))
-plt.scatter(x_vals, a_vals, color='blue', label='Frente de Pareto')
-
-# Escala logarítmica opcional
-#plt.xscale("log")
-#plt.yscale("log")
-
-# Anotar cada punto con k y b
-for i in range(len(x_vals)):
-    plt.annotate(f"k={k_vals[i]:.1f}\nb={b_vals[i]:.1f}",
-                 (x_vals[i], a_vals[i]),
-                 textcoords="offset points",
-                 xytext=(5,5),
-                 ha='left',
-                 fontsize=8)
-
-plt.xlabel("Máximo desplazamiento")
-plt.ylabel("Máxima aceleración")
-plt.title("Frente de Pareto (Optimización multiobjetivo)")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-plt.show()
-
-
-preference_a_vs_x = 0.35
-best_score = float("inf")
-best_individual = None
-best_outputs = []
-for individual in hof:
-    x_max, a_max = toolbox.evaluate(individual)
+def plot_pareto_front(solutions, img_path, annotate_inputs=False, show=False, verbose=False):
+    print("\n--> Getting the Pareto Front ...")
     
-    score = preference_a_vs_x * a_max + (1 - preference_a_vs_x) * x_max
-    if score < best_score:
-        best_outputs = [x_max, a_max]
-        best_score = score
-        best_individual = individual
+    # Manages directory where images will be created
+    image_dir_name = "\\images\\pareto"
+    image_path = str(img_path) + image_dir_name
+    permission_status = utils.manage_directories_gen(image_dir_name)
+    if permission_status == 1:
+        return
+    
+    # Obtains the Pareto Front
+    x_values = []
+    a_values = []
+    k_values = []
+    b_values = []
+    annotate_vals = []
 
-print("Preference: ", int(preference_a_vs_x*100), " min acceleration. ", int((1-preference_a_vs_x)*100), " min displacement")
-k_best = best_individual[0]
-b_best = best_individual[1]
-print("Best individual: k = ", k_best, " b = ", b_best)
-print("Min displacement: ", best_outputs[0], ". Min acceleration: ", best_outputs[1])
+    if verbose == True:
+        print("- Individuos no dominados:")
+
+    for individual in solutions:
+        if verbose == True:
+            print(individual)
+        x_max, a_max = toolbox.evaluate(individual)
+        x_values.append(x_max)  # maximum displacements
+        a_values.append(a_max)  # maximum accelerations
+        k_values.append(individual[0]) # k values
+        b_values.append(individual[1]) # b values
+
+    if annotate_inputs == True:
+        annotate_vals = [k_values, b_values]
+
+    utils.create_simple_graph(x_values = x_values, 
+                              x_title = "Máximo desplazamiento", 
+                              y_values = a_values, 
+                              y_title = "Máxima aceleración",
+                              annotate_values = annotate_vals,
+                              plot_type = "scatter",
+                              show_plot = show,
+                              graph_title = "Frente de Pareto (Optimización Multiobjetivo)",
+                              image_name = "pareto_front", 
+                              image_path = image_path)
+    print("- Saved in: ", image_path)
+
+
+def get_preferred_solution(solutions, preference, verbose):
+    print("\n--> Getting Prefered Solution ...")
+    # 'preference' will be applied to the first output of the evaluation_function
+    # '(1 - preference)' will be applied to the second output of the evaluation_function
+
+    best_score = float("inf")
+    best_individual = None
+    best_outputs = []
+    best_inputs = []
+    
+    for individual in solutions:
+        x_max, a_max = toolbox.evaluate(individual)
+        score = preference * x_max + (1 - preference) * a_max
+        if score < best_score:
+            best_outputs = [x_max, a_max]
+            best_score = score
+            best_individual = individual
+
+    best_inputs.append(best_individual[0]) # k
+    best_inputs.append(best_individual[1]) # b
+
+    if verbose == True:
+        print("- Using preference: ", int(preference*100), r"% for displacement. ", int((1-preference)*100), r"% for acceleration.")
+        print("- Best individual:\n\tk = ", best_inputs[0], " b = ", best_inputs[1])
+        print("- Output:\n\tDisplacement: ", best_outputs[0], ". Acceleration: ", best_outputs[1])
+
+    return best_individual, best_inputs, best_outputs
+
+
+def run_evolutionary_algorithm():
+    print("\n--> Running the Evolutionary Algorithm ...")
+    pesos_fitness = (-1., -1.,)  # Negative weights for minimization
+
+    # Fitness function definition
+    creator.create("fitness_function", base.Fitness, weights=pesos_fitness)
+    # Individual definition
+    creator.create("individual",
+                   list,
+                   fitness=creator.fitness_function,
+                   typecode="f")
+
+    # Alleles
+    toolbox.register("k_stiffness", random.uniform, a=k_range[0], b=k_range[1])  # Stiffness 'k' gene
+    toolbox.register("b_cushioning", random.uniform, a=b_range[0], b=b_range[1]) # Cushioning 'b' gene
+    # Individual generator
+    toolbox.register("individual_generation",
+                     tools.initCycle,
+                     creator.individual,
+                     (toolbox.k_stiffness, toolbox.b_cushioning),
+                     n=1)
+    # Population generator
+    toolbox.register("population",
+                     tools.initRepeat,
+                     list,
+                     toolbox.individual_generation)
+    toolbox.register("evaluate", evaluation_function)
+    # Evolution operators
+    toolbox.register("select", tools.selNSGA2)
+    toolbox.register("mate", tools.cxBlend, alpha=alpha)
+    toolbox.register("mutate", tools.mutGaussian, mu=mu, sigma=(sigma_k, sigma_b), indpb=0.2)
+    toolbox.decorate("mate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+    toolbox.decorate("mutate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+
+    if debug == True:
+        # Test for the population and individuals generation
+        population_test = toolbox.population(n=popu_size)
+        individual_test = toolbox.individual_generation()
+        print("Individuo: ", individual_test)
+        print("Ejemplo de poblacion: ", population_test)
+
+    # Statistics on the general fitness of the population
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("avg", np.mean)  # Generation 'Average'
+    stats.register("std", np.std)   # Individuals 'Standard Deviation'
+    stats.register("min", np.min)   # 'Min Fitness' of the generation
+    stats.register("max", np.max)   # 'Max Fitness' of the generation
+
+    hof = tools.ParetoFront() # Hall of Fame
+    popu = toolbox.population(n=popu_size) # Defines the initial population
+    popu, logbook = algorithms.eaMuPlusLambda(
+        population=popu, toolbox=toolbox, mu=parent_popu_size,
+        lambda_=child_popu_size, cxpb=mate_chance, mutpb=mutate_chance,
+        ngen=generations, stats=stats, halloffame=hof, verbose=verbose
+        ) # Runs the Evolutionary Algorithm
+
+    plot_pareto_front(solutions = hof, img_path = run_area, annotate_inputs = display_annotations, show = display_plots) # Saves/shows the pareto front
+    get_preferred_solution(solutions = hof, preference = x_to_a_preference, verbose=True) # Gets/prints the preferred solution
+    print("")
+
+
+##### MAIN EXECUTION #####
+
+if debug == True:
+    # Test for the Evaluation Function
+    print("Evaluación:", evaluation_function([30000, 1000])) # Individuo con mayor k y b debería tener menor x_max y a_max
+    print("Evaluación (peor caso):", evaluation_function([1000, 100]))
+
+# Problem Analysis
+model.test_model(input_vars = [64, 32], t_max = 100, t_sample = 500, u = 20000, img_path = run_area, show_plots = display_plots)
+analysis.ceteris_paribus(n_points = 10, inputs_range_dict = kb_range_dict, scale_porcentage = 0.2)
+
+# Evolutionary Algorithm
+run_evolutionary_algorithm()
