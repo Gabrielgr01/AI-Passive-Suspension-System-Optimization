@@ -49,26 +49,27 @@ def evaluation_function(individual, verbose=False):
     return [x_sol_max, a_sol_max]
 
 
-def checkBounds(lower_bounds, upper_bounds):
+def check_bounds(lower_bounds, upper_bounds):
     """
     Function:
-    Decorator that checks if the mutated individuals are within
-    the allele space. If they are not, the specific chromosome is
-    modified to enter said space.
+        Decorator that checks if the mutated individuals are within
+        the allele space. If they are not, the specific chromosome is
+        modified to enter said space.
 
     Parameters:
-    lower_bounds (list): list containing the minimum values of "b" and "k".
-    upper_bounds (list): list containing the maximum values of "b" and "k".
+        lower_bounds (list): list containing the minimum values of "b" and "k".
+        upper_bounds (list): list containing the maximum values of "b" and "k".
 
     Returns:
-    function: A decorator that wraps functions in order to maintain
-    individuals in the defined allele space.
+        function: A decorator that wraps functions in order to maintain
+        individuals in the defined allele space.
 
     Source:
-    Found in the official DEAP documentation webpage
-    https://deap.readthedocs.io/en/master/tutorials/basic/part2.html
+        Found in the official DEAP documentation webpage
+        https://deap.readthedocs.io/en/master/tutorials/basic/part2.html
 
     """
+    
     def decorator(func):
         def wrapper(*args, **kargs):
             offspring = func(*args, **kargs)
@@ -188,8 +189,8 @@ def run_evolutionary_algorithm():
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("mate", tools.cxBlend, alpha=alpha)
     toolbox.register("mutate", tools.mutGaussian, mu=mu, sigma=(sigma_k, sigma_b), indpb=0.2)
-    toolbox.decorate("mate", checkBounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
-    toolbox.decorate("mutate", checkBounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+    toolbox.decorate("mate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
+    toolbox.decorate("mutate", check_bounds([k_range[0], b_range[0]], [k_range[1], b_range[1]]))
 
     if debug == True:
         # Test for the population and individuals generation
