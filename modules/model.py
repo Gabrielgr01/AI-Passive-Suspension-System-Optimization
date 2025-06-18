@@ -14,10 +14,10 @@ from .config import *
 
 ##### FUNCTIONS DEFINITION #####
 
-
 def model(S, t, k, b, u):
     """
-    Function: Define the differential equations for a mass-spring-damper system.
+    Function: 
+        Define the differential equations for a mass-spring-damper system.
 
     Parameters:
         S (list): State vector / Initial conditions [position x, velocity v].
@@ -29,13 +29,15 @@ def model(S, t, k, b, u):
     Returns:
         List: Derivatives [dx/dt, dv/dt].
     """
+    
     x, v = S
     return [v, (-b * v - k * x + u) / m]
 
 
 def solve_model(input_vars, t_max, t_samples, u):
     """
-    Function: Solve the mass-spring-damper system using the given parameters.
+    Function: 
+        Solve the mass-spring-damper system using the given parameters.
 
     Parameters:
         input_vars (list): List with constants: k (stiffness) and b (cushioning).
@@ -46,6 +48,7 @@ def solve_model(input_vars, t_max, t_samples, u):
     Returns:
         List: time (t), displacement (x), velocity (v), and acceleration a.
     """
+    
     k = input_vars[0]
     b = input_vars[1]
     S_0 = (0, 0)
@@ -61,7 +64,8 @@ def solve_model(input_vars, t_max, t_samples, u):
 
 def get_model_maxs(x_sol, v_sol, a_sol, t):
     """
-    Function: Obtain maximum absolute values for displacement, velocity, and acceleration.
+    Function: 
+        Obtain maximum absolute values for displacement, velocity, and acceleration.
 
     Parameters:
         x_sol (list): Max displacement over time.
@@ -75,14 +79,14 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
 
     sol_maxs_list = []
 
-    # Máximo absoluto de desplazamiento y velocidad
+    # Abs max for displacement and velocity
     for sol in [x_sol, v_sol]:
         sol_max = np.max(np.abs(sol))
         sol_maxs_list.append(sol_max)
 
-    # Detectar máximos y mínimos locales de la aceleración
-    peaks_idx, _ = find_peaks(a_sol)
-    valleys_idx, _ = find_peaks(-a_sol)  # Mismos que mínimos locales
+    # Detect local max y min for the acceleration
+    peaks_idx, _ = find_peaks(a_sol) # Local max
+    valleys_idx, _ = find_peaks(-a_sol)  # Local min
     peaks = a_sol[peaks_idx]
     valleys = a_sol[valleys_idx]
 
@@ -99,12 +103,10 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
     if max_peak > abs(min_valley):
         max_peak_valley = max_peak
         idx = np.where(a_sol == max_peak)
-        # print("max_peak: ", max_peak)
     else:
         max_peak_valley = abs(min_valley)
         # max_peak_valley = min_valley
         idx = np.where(a_sol == min_valley)
-        # print("min_valley: ", min_valley)
 
     t_a_max = t[idx]
     sol_maxs_list.append(max_peak_valley)
@@ -115,7 +117,8 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
 
 def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     """
-    Function: Test the mass-spring-damper model and generate plots for:
+    Function: 
+        Test the mass-spring-damper model and generate plots for:
         x(t), v(t), a(t),
         peaks/valleys for the acceleration and
         max absolute acceleration.
@@ -141,7 +144,7 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     if permission_status == 1:
         return
 
-    # Grafica de x, v, a vs t
+    # Plot of x, v, a vs t
     t, x, v, a = solve_model(input_vars, t_max, t_sample, u)
     _, _, a_max, t_a_max = get_model_maxs(x, v, a, t)
 
@@ -161,7 +164,7 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
         image_path,
     )
 
-    ## Mostrar picos y valles de la aceleración
+    # To show peaks and valleys of the acceleration
     peaks, _ = find_peaks(a)
     valleys, _ = find_peaks(-a)
 
@@ -178,6 +181,7 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
         plt.show()
     plt.close()
 
+    # To show max abs peak for the acceleration
     plt.plot(t, a, label="a(t)")
     plt.plot(t_a_max, a_max, "o", label="Max Abs Seleccionado")
     plt.legend()

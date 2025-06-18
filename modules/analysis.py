@@ -14,24 +14,24 @@ from .model import *
 
 ##### FUNCTIONS DEFINITION #####
 
-
 def ceteris_paribus(n_points, inputs_range_dict, scale_porcentage):
     """
     Function:
-    Performs a sensitivity study using the Ceteris Paribus method. And creates
-    scatter plots of the trade-offs observed due to these variations.
+        Performs a sensitivity study using the Ceteris Paribus method. And creates
+        scatter plots of the trade-offs observed due to these variations.
 
     Parameters:
         n_points (int): Number of random input points to generate and analyze.
         inputs_range_dict (dict): A dictionary where keys are input variable
-                                    names (str) and values are tuples
-                                    with the range for each input.
+                                  names (str) and values are tuples
+                                  with the range for each input.
         scale_porcentage (float): Percentage that determines how far each input
                                   is varied around its reference value.
 
     Returns:
         None
     """
+    
     print("\n--> Running Sensibility Study (Ceteris Paribus) ...")
 
     # Manages directory where images will be created
