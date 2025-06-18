@@ -14,12 +14,13 @@ from .config import *
 
 ##### FUNCTIONS DEFINITION #####
 
+
 def model(S, t, k, b, u):
     """
     Function: Define the differential equations for a mass-spring-damper system.
 
     Parameters:
-        S (list): State vector / Initial conditions [position x, velocity v]. 
+        S (list): State vector / Initial conditions [position x, velocity v].
         t (float): Time variable (not used explicitly but required by odeint).
         k (float): Spring constant.
         b (float): Damping coefficient.
@@ -29,7 +30,7 @@ def model(S, t, k, b, u):
         List: Derivatives [dx/dt, dv/dt].
     """
     x, v = S
-    return [v, (-b*v-k*x+u)/m]
+    return [v, (-b * v - k * x + u) / m]
 
 
 def solve_model(input_vars, t_max, t_samples, u):
@@ -71,7 +72,7 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
     Returns:
         List: [max abs displacement, max abs velocity, max abs acceleration, time of max acceleration].
     """
-    
+
     sol_maxs_list = []
 
     # Máximo absoluto de desplazamiento y velocidad
@@ -85,7 +86,7 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
     peaks = a_sol[peaks_idx]
     valleys = a_sol[valleys_idx]
 
-    if len(peaks): 
+    if len(peaks):
         max_peak = np.max(peaks)
     else:
         max_peak = 0
@@ -97,14 +98,14 @@ def get_model_maxs(x_sol, v_sol, a_sol, t):
 
     if max_peak > abs(min_valley):
         max_peak_valley = max_peak
-        idx = np.where(a_sol==max_peak)
-        #print("max_peak: ", max_peak)
+        idx = np.where(a_sol == max_peak)
+        # print("max_peak: ", max_peak)
     else:
         max_peak_valley = abs(min_valley)
-        #max_peak_valley = min_valley
-        idx = np.where(a_sol==min_valley)
-        #print("min_valley: ", min_valley)
-    
+        # max_peak_valley = min_valley
+        idx = np.where(a_sol == min_valley)
+        # print("min_valley: ", min_valley)
+
     t_a_max = t[idx]
     sol_maxs_list.append(max_peak_valley)
     sol_maxs_list.append(t_a_max)
@@ -116,7 +117,7 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     """
     Function: Test the mass-spring-damper model and generate plots for:
         x(t), v(t), a(t),
-        peaks/valleys for the acceleration and 
+        peaks/valleys for the acceleration and
         max absolute acceleration.
 
     Parameters:
@@ -130,24 +131,35 @@ def test_model(input_vars, t_max, t_sample, u, img_path, show_plots):
     Returns:
         None
     """
-    
+
     print("--> Testing model ...")
-    
+
     # Manages directory where images will be created
     image_dir_name = "\\images\\model_tests"
     image_path = img_path + image_dir_name
     permission_status = manage_directories_gen(image_dir_name)
     if permission_status == 1:
         return
-    
+
     # Grafica de x, v, a vs t
     t, x, v, a = solve_model(input_vars, t_max, t_sample, u)
     _, _, a_max, t_a_max = get_model_maxs(x, v, a, t)
 
-    test_dict = {"x: Desplazamiento " + x_units:x,
-                 "v: Velocidad " + v_units:v,
-                 "a: Aceleración " + a_units:a,}
-    create_multi_y_graph(t, "Tiempo (s)", test_dict, "plot", show_plots, "Modelo Masa-Resorte-Amortiguador", "model_test", image_path)
+    test_dict = {
+        "x: Desplazamiento " + x_units: x,
+        "v: Velocidad " + v_units: v,
+        "a: Aceleración " + a_units: a,
+    }
+    create_multi_y_graph(
+        t,
+        "Tiempo (s)",
+        test_dict,
+        "plot",
+        show_plots,
+        "Modelo Masa-Resorte-Amortiguador",
+        "model_test",
+        image_path,
+    )
 
     ## Mostrar picos y valles de la aceleración
     peaks, _ = find_peaks(a)
